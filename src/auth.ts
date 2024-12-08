@@ -12,7 +12,7 @@ type UserType = {
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET!;
 
-const ACCESS_TOKEN_EXPIRES_IN = "1m";
+const ACCESS_TOKEN_EXPIRES_IN = "2m";
 const REFRESH_TOKEN_EXPIRES_IN = "30d";
 
 // access token 발급
@@ -78,7 +78,7 @@ authRouter.post("/", async (req, res: any) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       // secure: process.env.NODE_ENV === "production",
-      maxAge: 2 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     res
@@ -108,8 +108,8 @@ authRouter.get("/profile", authenticateJWT, async (req: any, res: any) => {
 });
 
 // Access Token 재발급
-authRouter.get("/refresh", (req: any, res: any) => {
-  const refreshToken = req.cookies.refreshToken; // 쿠키에서 Refresh Token 가져오기
+authRouter.get("/refresh", async (req, res: any) => {
+  const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token missing" });
@@ -118,13 +118,25 @@ authRouter.get("/refresh", (req: any, res: any) => {
   try {
     const decoded = jwt.verify(refreshToken, JWT_SECRET_KEY) as JwtPayload;
 
-    // 새로운 Access Token 발급
-    const newAccessToken = jwt.sign({ email: decoded.email }, JWT_SECRET_KEY, {
-      expiresIn: "1m",
+    // 새로운 Access Token 및 Refresh Token 발급
+    const newAccessToken = createAccessToken({
+      email: decoded.email,
+      password: decoded.password,
+    });
+    const newRefreshToken = createRefreshToken({
+      email: decoded.email,
+      password: decoded.password,
+    });
+
+    // 새로운 Refresh Token 설정
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
     });
 
     res.status(200).json({ accessToken: newAccessToken });
-  } catch (err) {
+  } catch (error) {
+    console.error("Refresh token error:", error);
     res.status(401).json({ message: "Invalid or expired refresh token" });
   }
 });
