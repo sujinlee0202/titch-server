@@ -4,6 +4,7 @@ import cors from "cors";
 import usersRouter from "./users";
 import authRouter from "./auth";
 import cookieParser from "cookie-parser";
+import postsRouter from "./post";
 
 const app = express();
 const router = Router();
@@ -23,6 +24,9 @@ router.use("/api/users", usersRouter);
 
 // 로그인, 인증
 router.use("/api/auth", authRouter);
+
+// 게시물
+router.use("/api/posts", postsRouter);
 
 app.use(router);
 
