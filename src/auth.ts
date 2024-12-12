@@ -132,6 +132,7 @@ authRouter.get("/refresh", async (req, res: any) => {
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({ accessToken: newAccessToken });
