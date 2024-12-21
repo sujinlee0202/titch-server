@@ -15,4 +15,29 @@ postsRouter.post("/create", async (req, res) => {
   }
 });
 
+postsRouter.get("/", async (req: any, res: any) => {
+  try {
+    const post = await prisma.post.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        author: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+    if (!post) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ post });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "서버 오류" });
+  }
+});
+
 export default postsRouter;
