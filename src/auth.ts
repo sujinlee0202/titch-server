@@ -142,4 +142,31 @@ authRouter.get("/refresh", async (req, res: any) => {
   }
 });
 
+const tokenBlacklist = new Set();
+
+authRouter.post("/logout", (req, res: any) => {
+  const accessToken = req.headers.authorization?.split(" ")[1];
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!accessToken) {
+    return res.status(400).json({ message: "Access token is required" });
+  }
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Refresh token is required" });
+  }
+
+  tokenBlacklist.add(accessToken);
+  tokenBlacklist.add(refreshToken);
+
+  // 쿠키 삭제 처리
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    // secure: true, // HTTPS에서만 동작
+    sameSite: "strict", // 설정한 sameSite와 일치해야 함
+  });
+
+  res.status(200).json({ message: "Successfull logged out" });
+});
+
 export default authRouter;
