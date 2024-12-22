@@ -12,7 +12,7 @@ type UserType = {
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET!;
 
-const ACCESS_TOKEN_EXPIRES_IN = "2m";
+const ACCESS_TOKEN_EXPIRES_IN = "5m";
 const REFRESH_TOKEN_EXPIRES_IN = "30d";
 
 // access token 발급
